@@ -1,0 +1,7 @@
+#!/bin/bash
+
+url=http://www.showmyipaddress.com/
+regexp0='<strong'
+regexp='\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}'
+wget -o /dev/null -O - $url|grep -Pe "$regexp0"|grep -Poe $regexp
+

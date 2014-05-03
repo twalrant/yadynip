@@ -1,0 +1,43 @@
+#!/bin/bash
+#
+# Get WAN IP from Router status page : DLINK DIR600
+# CAUTION: Requires to disable graphical authentication
+#	   (See router maintenance page)
+#
+
+## Router parameters
+router=192.168.1.1
+login=http://$router/login.php
+logout=http://$router/logout.php
+status=http://$router/st_device.php
+
+## Login/Admin parameters in clear (here here) or from a credentials
+## file with appropriated and restricted permissions.
+username=
+password=
+
+## Credential file 
+credentials=$(basename $0)
+credentials=$(dirname $0)/conf/${credentials:2}
+if [ -n "$credentials" ] && [ -f $credentials ]; then
+    . $credentials
+fi
+
+## Acquire the status page
+postdata="ACTION_POST=LOGIN&FILECODE=&VERIFICATION_CODE=&LOGIN_USER=$username&LOGIN_PASSWD=$password&login=Log+In+&VER_CODE="
+output=$(mktemp)
+
+# - Login or returning without result
+wget -o /dev/null -O - --post-data=$postdata $login | \
+    grep -oq bsc_internet || exit
+
+# - Get status page limited to lines containing 'wanipaddr'
+ipstr=$(wget -o /dev/null -O - $status | grep wanipaddr)
+
+# - Logout
+wget -o /dev/null -O /dev/null $logout
+
+## Extract relevant data in two steps
+regexp0='wanipaddr\"\s*>[^<]*'
+regexp='\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}'
+echo $ipstr|grep -Poe $regexp0|grep -Poe $regexp

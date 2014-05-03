@@ -1,0 +1,28 @@
+#!/bin/bash
+#
+# ZoneEdit dynamic dns client - script to update host(s) IP
+# address(es).
+#
+
+# Check argument - must be an IPv4 address
+[ -z "$1" ] && exit 1;
+regexp='\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}'
+[ "$(echo $1 | grep -Poe $regexp)" != "$1" ] && exit 1;
+
+## ZoneEdit parameters in clear (local here) or from the configuration
+## file with appropriate and restricted permissions.
+hosts=
+username=
+password=
+
+## Config file 
+configfile=$(basename $0)
+configfile=$(dirname $0)/conf/${configfile:2}
+if [ -n "$configfile" ] && [ -f $configfile ]; then
+    . $configfile
+fi
+
+url="https://dynamic.zoneedit.com/auth/dynamic.html?host=$hosts&dnsto=$1"
+wget -o /dev/null -O - --http-user=$username --http-passwd=$password $url | grep -q SUCCESS || exit 1;
+
+
