@@ -4,4 +4,7 @@
 sendmail
 zeupdate
 dir600
-
+share/
+yadynip.conf
+yadynip.log
+yadynip.tgz
