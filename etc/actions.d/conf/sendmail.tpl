@@ -1,4 +1,4 @@
-## yaDynIp Sendmail config - template (rename to sendmail)
+## yaDynIp Sendmail config - (template: rename to sendmail)
 
 ## SMTP Mail server - mandatory
 $smtp = 'mailhost';

@@ -28,14 +28,14 @@ postdata="ACTION_POST=LOGIN&FILECODE=&VERIFICATION_CODE=&LOGIN_USER=$username&LO
 output=$(mktemp)
 
 # - Login or returning without result
-wget -o /dev/null -O - --post-data=$postdata $login | \
-    grep -oq bsc_internet || exit
+wget="wget -o /dev/null -O - -t 1 -T 5"
+$wget --post-data=$postdata $login | grep -oq bsc_internet || exit
 
 # - Get status page limited to lines containing 'wanipaddr'
-ipstr=$(wget -o /dev/null -O - $status | grep wanipaddr)
+ipstr=$($wget $status | grep wanipaddr)
 
 # - Logout
-wget -o /dev/null -O /dev/null $logout
+$wget $logout > /dev/null
 
 ## Extract relevant data in two steps
 regexp0='wanipaddr\"\s*>[^<]*'

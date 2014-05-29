@@ -1,7 +1,7 @@
 NAME=yadynip
 
 FILES=	\
-	yadynip	\
+	bin/yadynip	\
 	etc/checkip.d/00dir600	\
 	etc/checkip.d/10all-nettools	\
 	etc/checkip.d/11dyndns		\
@@ -22,9 +22,5 @@ dist:
 INSTALL_DIR=/usr/local
 .PHONY: install
 install:
-	mkdir -p ${INSTALL_DIR}/etc/${NAME}/checkip.d/conf
-	mkdir -p ${INSTALL_DIR}/etc/${NAME}/actions.d/conf
-	mkdir -p ${INSTALL_DIR}/share/${NAME}/ipcaches
-	cp etc/${NAME}.conf ${INSTALL_DIR}/etc/${NAME}.conf
-	cp etc/checkip.d/* ${INSTALL_DIR}/etc/${NAME}/checkip.d
-	cp etc/actions.d/* ${INSTALL_DIR}/etc/${NAME}/actions.d
+	./install.sh ${INSTALL_DIR}
+

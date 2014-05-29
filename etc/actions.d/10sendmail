@@ -3,6 +3,7 @@
 use strict;
 use File::Basename;
 use Mail::Sendmail;
+use POSIX qw(strftime);
 
 our $smtp;
 our $from;
@@ -37,4 +38,14 @@ my %mail = ( To => $to,
 	     Smtp => $smtp );
 
 sendmail(%mail) or exit(1);
-exit 0;
+
+# $ARGV[1] holds the log filename
+exit(0) unless $ARGV[1];
+
+open (my $fh, ">>$ARGV[1]") || exit(0);	# Ignore this error
+my $datestr = strftime("%a, %d %b %Y %H:%M:%S %z", localtime);
+printf($fh "%s Report $ARGV[0] to $to\n", $datestr);
+close($fh);
+
+# Successfull action exit with 0
+exit(0);

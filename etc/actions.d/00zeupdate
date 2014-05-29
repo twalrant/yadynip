@@ -25,4 +25,9 @@ fi
 url="https://dynamic.zoneedit.com/auth/dynamic.html?host=$hosts&dnsto=$1"
 wget -o /dev/null -O - --http-user=$username --http-passwd=$password $url | grep -q SUCCESS || exit 1;
 
+# $2 holds the log filename
+[ -z "$2" ] && exit 0;
+echo $(date -R) "ZoneEdit update zone(s) $hosts with $1" >> $2
 
+# Successfull action exit with 0
+exit 0;

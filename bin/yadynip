@@ -7,29 +7,33 @@
 # Date:		May 2014
 #
 # Detection:
+
 # The tool accepts multiple ways to detect the WAN IP address by
-# executing the different checkip scripts until one an IP is found
-# (See the checkip.d folder for available methods/scripts). You can
-# add your own method and/or disable some scripts by deleting the
-# script file or by updating the script to return/exit without
-# returning an IP address.
+# executing different checkip scripts until an IP address is found
+# (See the checkip.d folder for examples of available
+# methods/scripts). You can add your own method and/or disable some
+# scripts by deleting the script file or by updating the script to
+# return/exit without returning an IP address.
 #
 # Actions:
+#
 # Once the IP address is detected, the tool check all available
-# actions (located in folder actions.d). It executes the script only
-# if the IP address has changed. The IP address is cached per action
-# upon succesful execution of the action. The tool is able to only
-# repeat the action who failed at the previous attempt.
+# actions (located in folder actions.d). It executes the action script
+# only if the IP address has changed. The IP address is cached per
+# action upon succesfull execution of the action, so that the tool is
+# able to only repeat the action who failed at the previous attempt.
 #
 name=yadynip
-installdir=$(dirname $0)
+installdir=$(dirname $(readlink -f $0))
 installdir=${installdir%%/bin}
 
 sharedir=$installdir/share/$name
 etcdir=$installdir/etc/$name
-config=$installdir/etc/$name/$name.conf
+config=$installdir/etc/$name.conf
 
-for conf in $config ~/$name.conf $installdir/$name.conf; do
+logging=none
+
+for conf in $config ~/.$name.conf ./$name.conf; do
     if [ -f $conf ]; then
 	. $conf
     fi
@@ -40,11 +44,12 @@ actionsdir=$etcdir/actions.d
 ipcachedir=$sharedir/ipcaches
 
 verbose() {
-    [ "$quiet" != 'on' ] && return;
+    [ "$quiet" != 'on' ] || return;
     echo $*
 }
 
 logdebug() {
+    [ -z "$logfile" ] && return;
     [ "$logging" != 'debug' ] && return;
     verbose $*
     echo $(date -R) DEBUG $* >> $logfile
@@ -52,13 +57,14 @@ logdebug() {
 
 logverbose() {
     verbose $*
+    [ -z "$logfile" ] && return;
     [ "$logging" != 'verbose' ] && [ "$logging" != 'debug' ] && return;
     echo $(date -R) $* >> $logfile
 }
 
 ## Get my WAN IP address using available checkip scripts
 wanip=
-for f in $checkipdir/*; do
+for f in $checkipdir/* 99ignore~; do
     # Skip backup file and folder
     [ -d $f ] && continue
     echo $f | grep -Pqe "~$" && continue
@@ -77,8 +83,7 @@ test -z "$wanip" && echo "$name: No WAN IP Address found" && exit;
 logverbose "WAN IP Address= " $wanip
 
 ## Perform actions with detected IP address
-touch $actionsdir/99ignore~
-for f in $actionsdir/*; do
+for f in $actionsdir/* 99ignore~; do
     # Skip backup file and folder
     [ -d $f ] && continue
     echo $f | grep -Pqe "~$" && continue
@@ -91,9 +96,9 @@ for f in $actionsdir/*; do
     # Skip this action if no new IP address
     [ "$lastip" == "$wanip" ] && continue
 
-    # Execute the action, abort upon error.
+    # Execute the action(wanip, logfile), abort upon error.
     logverbose Execute $f $wanip
-    $f $wanip || continue
+    $f $wanip $logfile || continue
 
     # Update known IP address for this action
     echo $wanip > $ipcache
