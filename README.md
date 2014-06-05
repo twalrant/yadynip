@@ -4,7 +4,7 @@ Yet Another Dynamic IP controller is an utility used to detect and act
 upon WAN IP change. It operates in two steps, the detection of the
 current WAN IP address and the execution of registered actions.
 
-#* Detection phase:
+## Detection phase:
 
   The tool accepts multiple ways to detect the WAN IP address by
   executing different checkip scripts until an IP address is found
@@ -12,7 +12,7 @@ current WAN IP address and the execution of registered actions.
   methods/scripts). You can add your own method and/or disable some
   scripts. Scripts without configuration are silently ignored.
 
-#* Actions phase:
+## Actions phase:
 
   Once the IP address is detected, the tool check the requirement to
   execute all available actions (located in folder actions.d). It
