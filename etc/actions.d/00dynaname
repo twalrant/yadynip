@@ -1,0 +1,31 @@
+#!/bin/bash
+#
+# Courtesy of doegox - see
+# http://wiki.yobi.be/wiki/Bind#Update_from_client_automatically for
+# details.
+#
+ 
+host=
+ns=
+
+# Config file.
+configfile=$(basename $0)
+configfile=$(dirname $0)/conf/${configfile:2}
+if [ -n "$configfile" ] && [ -f $configfile ]; then
+    . $configfile
+fi
+ 
+# Quit silently if not configured.
+[ "$host" == "" ] || [ "$ns" == "" ] && exit 1
+ 
+tooldir=$(basename $0)
+tooldir=$(dirname $0)/${tooldir:2}
+cd $tooldir
+./dynaname -H $host -S $ns -A $1 || exit $?
+
+# $2 holds the log filename
+[ -z "$2" ] && exit 0;
+echo $(date -R) "Dynaname update zone $host with $1" >> $2
+ 
+# Successfull action exit with 0
+exit 0;
