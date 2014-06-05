@@ -5,31 +5,35 @@
 #	   (See router maintenance page)
 #
 
-## Router parameters
+## Router address (default)
 router=192.168.1.1
-login=http://$router/login.php
-logout=http://$router/logout.php
-status=http://$router/st_device.php
 
 ## Login/Admin parameters in clear (here here) or from a credentials
 ## file with appropriated and restricted permissions.
 username=
 password=
 
-## Credential file 
-credentials=$(basename $0)
-credentials=$(dirname $0)/conf/${credentials:2}
-if [ -n "$credentials" ] && [ -f $credentials ]; then
-    . $credentials
+## Config file 
+configfile=$(basename $0)
+configfile=$(dirname $0)/conf/${configfile:2}
+if [ -n "$configfile" ] && [ -f $configfile ]; then
+    . $configfile
 fi
+
+## Router parameters
+login=http://$router/login.php
+logout=http://$router/logout.php
+status=http://$router/st_device.php
+
+## Quit silently if not configured.
+[ -z "$router" ] || [ -z "$username" ] || [ -z "$password" ] && exit 1;
 
 ## Acquire the status page
 postdata="ACTION_POST=LOGIN&FILECODE=&VERIFICATION_CODE=&LOGIN_USER=$username&LOGIN_PASSWD=$password&login=Log+In+&VER_CODE="
-output=$(mktemp)
 
 # - Login or returning without result
 wget="wget -o /dev/null -O - -t 1 -T 5"
-$wget --post-data=$postdata $login | grep -oq bsc_internet || exit
+$wget --post-data=$postdata $login | grep -oq bsc_internet || exit 1;
 
 # - Get status page limited to lines containing 'wanipaddr'
 ipstr=$($wget $status | grep wanipaddr)

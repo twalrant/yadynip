@@ -22,6 +22,10 @@ if [ -n "$configfile" ] && [ -f $configfile ]; then
     . $configfile
 fi
 
+## Quit silently if not configured.
+[ -z "$hosts" ] || [ -z "$username" ] || [ -z "$password" ] && exit 1;
+
+## Update zone.
 url="https://dynamic.zoneedit.com/auth/dynamic.html?host=$hosts&dnsto=$1"
 wget -o /dev/null -O - --http-user=$username --http-passwd=$password $url | grep -q SUCCESS || exit 1;
 
