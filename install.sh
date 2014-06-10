@@ -11,12 +11,12 @@ mkdir -p $installdir/etc/$name/actions.d/conf || exit;
 mkdir -p $installdir/share/$name/ipcaches || exit;
 
 logfile=$logdir/$name.log
-echo $(date -R) ": $name installed"  > $logfile
+echo $(date -R) $name installed  > $logfile
 
 cp bin/$name $installdir/bin || exit;
 chmod 755 $installdir/bin/$name
 
-cp etc/$name.conf $installdir/etc/$name.conf || exit;
+cp -i etc/$name.conf $installdir/etc/$name.conf || exit;
 chmod 644 $installdir/etc/$name.conf
 
 for f in etc/checkip.d/*; do

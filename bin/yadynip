@@ -48,7 +48,7 @@ ipcachedir=$sharedir/ipcaches
 function log() {
     local mode=$1
     shift;
-    [ -z "$logfile" ] || [ "$logging" != "$mode" ] && return;
+    [ -z "$logfile" ] || [ "$logging" == "none" ] && return;
     [ "$logging" != "debug" ] && mode="";
     [ "$logging" == "debug" ] && mode="[DEBUG]";
     echo $(date -R) $mode $* >> $logfile
