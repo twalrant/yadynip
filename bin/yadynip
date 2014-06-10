@@ -31,7 +31,9 @@ sharedir=$installdir/share/$name
 etcdir=$installdir/etc/$name
 config=$installdir/etc/$name.conf
 
+# Default values
 logging=none
+quiet=off
 
 for conf in $config ~/.$name.conf ./$name.conf; do
     if [ -f $conf ]; then
@@ -43,23 +45,23 @@ checkipdir=$etcdir/checkip.d
 actionsdir=$etcdir/actions.d
 ipcachedir=$sharedir/ipcaches
 
-verbose() {
-    [ "$quiet" != 'on' ] || return;
+function log() {
+    local mode=$1
+    shift;
+    [ -z "$logfile" ] || [ "$logging" != "$mode" ] && return;
+    [ "$logging" != "debug" ] && mode="";
+    [ "$logging" == "debug" ] && mode="[DEBUG]";
+    echo $(date -R) $mode $* >> $logfile
+}
+function verbose() {
+    [ "$quiet" != "on" ] && return;
     echo $*
 }
-
-logdebug() {
-    [ -z "$logfile" ] && return;
-    [ "$logging" != 'debug' ] && return;
+function verbose_log() {
+    local mode=$1
+    shift;
+    log $mode $*
     verbose $*
-    echo $(date -R) DEBUG $* >> $logfile
-}
-
-logverbose() {
-    verbose $*
-    [ -z "$logfile" ] && return;
-    [ "$logging" != 'verbose' ] && [ "$logging" != 'debug' ] && return;
-    echo $(date -R) $* >> $logfile
 }
 
 ## Get my WAN IP address using available checkip scripts
@@ -71,7 +73,7 @@ for f in $checkipdir/* 99ignore~; do
 
     # Get my WAN IP
     wanip=$($f)
-    logdebug $f returns $wanip;
+    verbose_log debug $f returns $wanip;
 
     # Stop here if an IP address is found
     test -n "$wanip" && break
@@ -80,7 +82,7 @@ done
 ## Stop here if no WAN IP Address is found
 test -z "$wanip" && echo "$name: No WAN IP Address found" && exit;
 
-logverbose "WAN IP Address= " $wanip
+verbose_log verbose "WAN IP Address= " $wanip
 
 ## Perform actions with detected IP address
 for f in $actionsdir/* 99ignore~; do
@@ -97,7 +99,7 @@ for f in $actionsdir/* 99ignore~; do
     [ "$lastip" == "$wanip" ] && continue
 
     # Execute the action(wanip, logfile), abort upon error.
-    logverbose Execute $f $wanip
+    log verbose Execute $f $wanip
     $f $wanip $logfile || continue
 
     # Update known IP address for this action

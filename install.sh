@@ -2,11 +2,16 @@
 #
 name=yadynip
 installdir=/usr/local
-test -n "$1" && installdir=$1
+logdir=/var/local/log
+test -n "$1" && installdir=$1 && logdir=$1
+mkdir -p $logdir || exit;
 mkdir -p $installdir/bin || exit;
 mkdir -p $installdir/etc/$name/checkip.d/conf || exit;
 mkdir -p $installdir/etc/$name/actions.d/conf || exit;
 mkdir -p $installdir/share/$name/ipcaches || exit;
+
+logfile=$logdir/$name.log
+echo $(date -R) ": $name installed"  > $logfile
 
 cp bin/$name $installdir/bin || exit;
 chmod 755 $installdir/bin/$name
