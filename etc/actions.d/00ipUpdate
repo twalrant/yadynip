@@ -1,0 +1,48 @@
+#!/bin/bash
+#
+# DNSexit dynamic dns client - script to update host(s) IP
+# address(es).
+#
+
+# Check argument - must be an IPv4 address
+[ -z "$1" ] && exit 1;
+regexp='\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}'
+[ "$(echo $1 | grep -Poe $regexp)" != "$1" ] && exit 1;
+
+## DNSexit parameters in clear (local here) or from the configuration
+## file with appropriate and restricted permissions.
+hosts=
+username=
+password=
+
+## Config file 
+configfile=$(basename $0)
+configfile=$(dirname $0)/conf/${configfile:2}
+if [ -n "$configfile" ] && [ -f $configfile ]; then
+    . $configfile
+fi
+
+## Quit silently if not configured.
+[ -z "$hosts" ] || [ -z "$username" ] || [ -z "$password" ] && exit 1;
+
+## Update zone.
+url="http://update.dnsexit.com/RemoteUpdate.sv";
+url=$url"?login=$username&password=$password&host=$hosts&myip=$1"
+
+## Expected to return: code=string
+#> 0=OK
+#> 1=IP is the same as the IP on the system
+#> 2=Invalid password
+#> 3=User not found
+#> 4=IP not changed. To save our system resources, \
+#    please don't post updates unless the IP got changed.
+output=/tmp/ipUpdate.log
+wget -o /dev/null -O $output $url
+cat $output | grep -Pq "^(0|1|4)=" || exit 1;
+
+# $2 holds the log filename
+[ -z "$2" ] && exit 0;
+echo $(date -R) "DNSexit update zone(s) $hosts with $1" >> $2
+
+# Successfull action exit with 0
+exit 0;
