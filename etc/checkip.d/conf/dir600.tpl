@@ -1,3 +1,4 @@
-# DLink DIR600 login username and password
-username=admin
-password=YourPassword
+## DLink DIR600 login username and password
+## - template: rename to dir600
+#username=admin
+#password=YourPassword

@@ -6,21 +6,21 @@ current WAN IP address and the execution of registered actions.
 
 ## Detection phase:
 
-  The tool accepts multiple ways to detect the WAN IP address by
-  executing different checkip scripts until an IP address is found
-  (See the checkip.d folder for examples of available
-  methods/scripts). You can add your own method and/or disable some
-  scripts. Scripts without configuration are silently ignored.
+The tool accepts multiple ways to detect the WAN IP address by
+executing different checkip scripts until an IP address is found (See
+the checkip.d folder for examples of available methods/scripts). You
+can add your own method and/or disable some scripts. Scripts without
+configuration are silently ignored.
 
 ## Actions phase:
 
-  Once the IP address is detected, the tool check the requirement to
-  execute all available actions (located in folder actions.d). It
-  executes the action script only if the IP address has changed. The
-  IP address is cached per action upon succesfull execution of the
-  action, so that the tool is able to only repeat the action who
-  failed at the previous attempt. Action scripts without configuration
-  are silently failing, hence will be repeated every time.
+Once the IP address is detected, the tool check the requirement to
+execute all available actions (located in folder actions.d). It
+executes the action script only if the IP address has changed. The IP
+address is cached per action upon succesfull execution of the action,
+so that the tool is able to only repeat the action who failed at the
+previous attempt. Action scripts without configuration are silently
+failing, hence will be repeated every time.
 
 # Installation
 
@@ -42,8 +42,8 @@ with write permissions.
 
 # Configuration
 
-The tool support different locations for the configuration file in the
-following order:
+The tool supports different locations for the configuration file in
+the following order:
 
 - ${installdir}/etc/yadynip.conf
 - $HOME/.yadynip.conf

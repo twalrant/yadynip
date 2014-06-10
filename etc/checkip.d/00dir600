@@ -2,14 +2,14 @@
 #
 # Get WAN IP from Router status page : DLINK DIR600
 # CAUTION: Requires to disable graphical authentication
-#	   (See router maintenance page)
+#          (See router maintenance page)
 #
 
 ## Router address (default)
 router=192.168.1.1
 
 ## Login/Admin parameters in clear (here here) or from a credentials
-## file with appropriated and restricted permissions.
+## file with appropriate and restricted permissions.
 username=
 password=
 
