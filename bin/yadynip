@@ -44,6 +44,7 @@ done
 
 ipcachedir=$sharedir/ipcaches
 [ "$quiet" == "on" ] && verbose=none
+[ -d "$ipcachedir" ] || /bin/mkdir -p $ipcachedir || exit $?
 
 ## Get run scripts or programs in a directory, do not execute.
 ## Similar to run-parts(8)
