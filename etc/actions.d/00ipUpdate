@@ -5,9 +5,9 @@
 #
 
 # Check argument - must be an IPv4 address
-[ -z "$1" ] && exit 1;
+[ -z "$1" ] && exit 10;
 regexp='\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}'
-[ "$(echo $1 | grep -Poe $regexp)" != "$1" ] && exit 1;
+[ "$(echo $1 | grep -Poe $regexp)" != "$1" ] && exit 11;
 
 ## DNSexit parameters in clear (local here) or from the configuration
 ## file with appropriate and restricted permissions.
@@ -16,14 +16,14 @@ username=
 password=
 
 ## Config file 
-configfile=$(basename $0)
-configfile=$(dirname $0)/conf/${configfile:2}
-if [ -n "$configfile" ] && [ -f $configfile ]; then
+configfile=$0.conf
+if [ -f $configfile ]; then
     . $configfile
 fi
 
 ## Quit silently if not configured.
-[ -z "$hosts" ] || [ -z "$username" ] || [ -z "$password" ] && exit 1;
+[ -z "$hosts" ] || [ -z "$username" ] || [ -z "$password" ] && \
+    exit 20;
 
 ## Update zone.
 url="http://update.dnsexit.com/RemoteUpdate.sv";
@@ -40,9 +40,7 @@ output=/tmp/ipUpdate.log
 wget -o /dev/null -O $output $url
 cat $output | grep -Pq "^(0|1|4)=" || exit 1;
 
-# $2 holds the log filename
-[ -z "$2" ] && exit 0;
-echo $(date -R) "DNSexit update zone(s) $hosts with $1" >> $2
+echo "DNSexit update zone(s) $hosts with $1"
 
 # Successfull action exit with 0
 exit 0;

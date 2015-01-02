@@ -5,27 +5,31 @@
 # details.
 #
  
+# Check argument - must be an IPv4 address
+[ -z "$1" ] && exit 10;
+regexp='\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}'
+[ "$(echo $1 | grep -Poe $regexp)" != "$1" ] && exit 11;
+
+# Required variables:
 host=
 ns=
 
-# Config file.
-configfile=$(basename $0)
-configfile=$(dirname $0)/conf/${configfile:2}
-if [ -n "$configfile" ] && [ -f $configfile ]; then
+# Config file:
+configfile=$0.conf
+if [ -f $configfile ]; then
     . $configfile
 fi
  
 # Quit silently if not configured.
-[ "$host" == "" ] || [ "$ns" == "" ] && exit 1
- 
+[ "$host" == "" ] || [ "$ns" == "" ] && \
+    exit 20;
+
 tooldir=$(basename $0)
 tooldir=$(dirname $0)/${tooldir:2}
 cd $tooldir
 ./dynaname -H $host -S $ns -A $1 || exit $?
 
-# $2 holds the log filename
-[ -z "$2" ] && exit 0;
-echo $(date -R) "Dynaname update zone $host with $1" >> $2
+echo "Dynaname update zone $host with $1"
  
 # Successfull action exit with 0
 exit 0;

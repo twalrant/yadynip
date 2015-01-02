@@ -1,5 +1,5 @@
 ## yaDynIp Sendmail config
-## - template: rename to sendmail
+## - template: rename to 10sendmail.conf
 
 ## SMTP Mail server - mandatory
 #$smtp = 'mailhost';

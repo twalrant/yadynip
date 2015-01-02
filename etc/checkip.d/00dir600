@@ -14,9 +14,8 @@ username=
 password=
 
 ## Config file 
-configfile=$(basename $0)
-configfile=$(dirname $0)/conf/${configfile:2}
-if [ -n "$configfile" ] && [ -f $configfile ]; then
+configfile=$0.conf
+if [ -f $configfile ]; then
     . $configfile
 fi
 
@@ -26,7 +25,8 @@ logout=http://$router/logout.php
 status=http://$router/st_device.php
 
 ## Quit silently if not configured.
-[ -z "$router" ] || [ -z "$username" ] || [ -z "$password" ] && exit 1;
+[ -z "$router" ] || [ -z "$username" ] || [ -z "$password" ] && \
+    exit 20;
 
 ## Acquire the status page
 postdata="ACTION_POST=LOGIN&FILECODE=&VERIFICATION_CODE=&LOGIN_USER=$username&LOGIN_PASSWD=$password&login=Log+In+&VER_CODE="

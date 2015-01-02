@@ -4,4 +4,3 @@ url=http://checkip.dyndns.org
 regexp='\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}'
 wget="wget -o /dev/null -O - -t 1 -T 5"
 $wget $url|grep -Poe $regexp
-

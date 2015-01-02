@@ -1,11 +1,9 @@
 *~
 90test-failed
 90test-success
-sendmail
-zeupdate
-ipUpdate
-dir600
 share/
+etc/actions.d/*.conf
+etc/checkip.d/*.conf
 yadynip.conf
 yadynip.log
 yadynip.tgz

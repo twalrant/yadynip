@@ -13,18 +13,17 @@ our $message = 'New WAN IP address: %s';
 our $hostname;
 
 ## Load config file if present or exit with success.
-my $configfile = join ('/', dirname($0), 'conf', substr(basename($0), 2));
-exit(0) unless -f $configfile;
-require $configfile;
-
-# Check mandatory config parameters
-exit(1) unless $smtp;
-exit(1) unless $from;
-exit(1) unless $to;
+my $configfile = join ('.', $0, 'conf');
+require $configfile if -f $configfile;
 
 # Check argument - must be an IPv4 address
-exit(1) unless $ARGV[0];
-exit(1) unless $ARGV[0] =~ /\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/;
+exit(10) unless $ARGV[0];
+exit(11) unless $ARGV[0] =~ /\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/;
+
+# Check mandatory config parameters
+exit(20) unless $smtp;
+exit(20) unless $from;
+exit(20) unless $to;
 
 # Update 'To' and/or 'Message if required.
 $to = join(';', @$to) if ref($to) =~ /ARRAY/;
@@ -32,20 +31,14 @@ $message = sprintf($message, $ARGV[0]);
 $message .= sprintf(" (%s)", $hostname) if $hostname;
 
 my %mail = ( To => $to,
-	     From => $from,
-	     Subject => $subject,
-	     Message => $message,
-	     Smtp => $smtp );
+             From => $from,
+             Subject => $subject,
+             Message => $message,
+             Smtp => $smtp );
 
 sendmail(%mail) or exit(1);
 
-# $ARGV[1] holds the log filename
-exit(0) unless $ARGV[1];
-
-open (my $fh, ">>$ARGV[1]") || exit(0);	# Ignore this error
-my $datestr = strftime("%a, %d %b %Y %H:%M:%S %z", localtime);
-printf($fh "%s Report $ARGV[0] to $to\n", $datestr);
-close($fh);
+printf("Report $ARGV[0] to $to\n");
 
 # Successfull action exit with 0
 exit(0);
