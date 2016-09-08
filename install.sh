@@ -33,7 +33,7 @@ echo $(date -R) $name installed >> $logfile
 /bin/chmod 755 $installdir/bin/$name
 
 /bin/cp -i etc/$name.conf $installdir/etc/$name.conf || exit;
-/bin/chmod 644 $installdir/etc/$name.conf
+/bin/chmod 640 $installdir/etc/$name.conf
 
 for dir in checkip.d actions.d; do
     for part in $(runparts etc/$dir); do
@@ -42,7 +42,7 @@ for dir in checkip.d actions.d; do
         [ -f "$part.conf.tpl" ] || continue
         /bin/cp $part.conf.tpl $installdir/etc/$name/$dir
     done
-    /bin/chmod 644 $installdir/etc/$name/$dir/*.tpl
+    /bin/chmod 640 $installdir/etc/$name/$dir/*.tpl
 done
 
 # Create a trace for later uninstall
