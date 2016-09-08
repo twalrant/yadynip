@@ -23,6 +23,12 @@
 # action upon succesfull execution of the action, so that the tool is
 # able to only repeat the action who failed at the previous attempt.
 #
+# Action exit status:
+# 	20	action is not configured, the execution is silently ignored.
+#
+# Revisions:
+# 2016-09-04 twa	Update logging
+#
 name=yadynip
 installdir=$(dirname $(readlink -f $0))
 installdir=${installdir%%/bin}
@@ -38,7 +44,7 @@ quiet=off
 
 for conf in $config ~/.$name.conf ./$name.conf; do
     if [ -f $conf ]; then
-	. $conf
+	    . $conf
     fi
 done
 
@@ -54,7 +60,7 @@ function runparts()
     local regex='[A-Za-z0-9_\-]+$';
     local parts
     [ -n "$2" ] && regex=$2;
-    for f in $(/usr/bin/find $dir -type f -regex $dir'/'$regex | sort); do
+    for f in $(/usr/bin/find $dir \( -type f -o -type l \) -regex $dir'/'$regex | sort); do
         [ -x "$f" ] || continue;	# Skip, if not executable.
         parts="$parts $f";
     done
@@ -70,60 +76,74 @@ function lastip()
     /bin/echo $lastip;
 }
 
-## Log message if required by config.
-function log()
+## Log message to file and stdout, if required by config.
+function yalog()
 {
-    local level=$1; shift;
+    local cmd=$1; shift
+    local output=false
 
-    # If verbose output to console according to selected level
-    # verbose levels: none, verbose or debug
-    if [ "$verbose" != "none" ]; then
-        # $verbose = debug -> output
-        # $level != debug -> output
-        [ "$verbose" == "debug" ] || [ $level != "debug" ] && \
-            /bin/echo "[$name] "$*
-    fi
+    # Check commands
+    case ${cmd,,} in
+        cha*|err*|act*|deb*) ;;
+        *) /bin/echo ERROR: Unexpected yalog command: $cmd ;;
+    esac
+
+    # Report to stdout, if required.
+    case ${verbose,,} in
+        on)
+            # Report error or change
+            [[ ${cmd,,} =~ ^cha ]] && output=true
+            [[ ${cmd,,} =~ ^err ]] && output=true
+            ;;
+        deb*)
+            # Report all
+            output=true
+            ;;
+    esac
+
+    $output && /bin/echo "$*" | /bin/sed 's/^/['$name'] /'
 
     # No log file, abort here.
     [ -z "$logfile" ] && return;
 
-    # If logging output to log-file according to selected level
-    # logging levels: none, verbose or debug
-    if [ "$logging" != "none" ]; then
-        # $logging = debug -> output
-        # $level != debug -> output
-        [ "$logging" == "debug" ] || [ $level != "debug" ] && \
-            /bin/echo $(date -R)": "$* >> $logfile
-    fi
-}
+    # Reset output flag
+    output=false
 
-## Log a logfile content if required by config.
-function logfile()
-{
-    local now=$(date -R)
+    # Log to file, if required.
+    case ${logging,,} in
+        low|on)
+            # Log change only
+            [[ ${cmd,,} =~ ^cha ]] && output=true
+            ;;
+        med*)
+            # Log error or change
+            [[ ${cmd,,} =~ ^cha ]] && output=true
+            [[ ${cmd,,} =~ ^err ]] && output=true
+            ;;
+        all|deb*|hi*)
+            # Log all
+            output=true
+            ;;
+    esac
 
-    # No log file, abort here.
-    [ -z "$logfile" ] && return;
-    [ "$logging" == "debug" ] || return;
-
-    /bin/sed 's/^/'"$(date -R)"': /' $1 >> $logfile
+    $output && /bin/echo "$*" | /bin/sed 's/^/'"$(/bin/date -R)"': /' >> $logfile
 }
 
 ## Get my WAN IP address using available checkip scripts
 wanip=
 for part in $(runparts $etcdir/checkip.d); do
-    log debug Running $part
+    yalog action Running $part
     wanip=$($part)
     [ -n "$wanip" ] && break;
 done
 
 ## Stop here if no WAN IP Address is found
-[ -z "$wanip" ] && log debug "No WAN IP Address found" && exit;
+[ -z "$wanip" ] && yalog change "WAN IP Address not found" && exit;
 
 ## Record and log new WAN IP, if applicable.
 lastip=$(lastip $name)
 [ "$wanip" != "$lastip" ] && \
-    log verbose "WAN IP changed: $wanip" && \
+    yalog change "WAN IP changed: $wanip" && \
     /bin/echo $wanip > $ipcachedir/$name
 
 ## Perform actions with detected IP address
@@ -135,15 +155,22 @@ for part in $(runparts $etcdir/actions.d); do
     [ "$lastip" == "$wanip" ] && continue
 
     # Execute the action(wanip), abort upon error.
-    log debug Running $part $wanip
-    log=$(mktemp)
-    $part $wanip > $log	# Log to file (tried to var, but didn't work
-                        # with multi-lines output)
+    yalog action Running $part $wanip
+
+    log=$($part $wanip)
     status=$?
-    [ -s "$log" ] && logfile $log	# Use log if not empty
-    /bin/rm -f $log
+
+    [ -n "$log" ] && yalog action "$log"
+
+    # Action exit value 20 means unconfigured, hence silently ignored.
+    [ $status -ne 0 ] && [ $status -ne 20 ] && \
+        yalog error ERROR: $part returned $status
     [ $status -ne 0 ] && continue
 
     # Update known IP address for this action
     /bin/echo $wanip > $ipcachedir/$(basename $part)
+
+    yalog debug Updating $ipcachedir/$(basename $part) with $wanip
 done
+
+exit 0
