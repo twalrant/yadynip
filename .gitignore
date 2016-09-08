@@ -4,6 +4,9 @@
 share/
 etc/actions.d/*.conf
 etc/checkip.d/*.conf
-yadynip.conf
-yadynip.log
-yadynip.tgz
+*.conf
+*.log
+*.tgz
+*.old
+notes.txt
+test.sh
