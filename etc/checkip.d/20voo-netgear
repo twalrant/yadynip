@@ -1,0 +1,35 @@
+#!/bin/bash
+#
+# Get WAN IP from Router status page : Netgear VOO
+#
+
+## Router address (default)
+router=192.168.0.1
+
+## Login/Admin parameters in clear (here here) or from a credentials
+## file with appropriate and restricted permissions.
+username=
+password=
+
+## Config file 
+configfile=$0.conf
+if [ -f $configfile ]; then
+    . $configfile
+fi
+
+## Router parameters
+url=http://$router/diagnostic.htm
+
+## Quit silently if not configured.
+[ -z "$router" ] || [ -z "$username" ] || [ -z "$password" ] && \
+    exit 20;
+
+# - Login or returning without result
+wget="wget -o /dev/null -O - -t 1 -T 5 --user=$username --password=$password"
+$wget $url | grep -oq InitTagValue || exit 1;
+
+# - Get status page limited to lines containing 'wanipaddr'
+ipstr=$($wget $url | grep tagValueList | grep -v '//' | head -1)
+
+## Extract relevant data in two steps
+echo $ipstr|cut -d'|' -f9
